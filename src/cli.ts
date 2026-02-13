@@ -23,6 +23,10 @@ program
   .option("--quote <id>", "Quote a post by ID")
   .option("--dry-run", "Print the post without sending")
   .action(async (text: string, opts) => {
+    if (!text.trim()) {
+      console.error(chalk.red("✗"), "Post text cannot be empty.");
+      process.exit(1);
+    }
     if (opts.dryRun) {
       console.log(chalk.yellow("[dry-run]"), text);
       return;
@@ -93,7 +97,8 @@ program
   .action(async (opts) => {
     const client = getClient();
     const me = await client.me();
-    const posts = await client.getUserPosts(me.id, parseInt(opts.count)) as any[];
+    const count = parseInt(opts.count) || 10;
+    const posts = await client.getUserPosts(me.id, count) as any[];
     if (!posts.length) {
       console.log(chalk.dim("No posts found."));
       return;
@@ -117,7 +122,8 @@ program
   .option("-n, --count <n>", "Number of results", "10")
   .action(async (query: string, opts) => {
     const client = getClient();
-    const posts = await client.searchRecent(query, parseInt(opts.count)) as any[];
+    const count = parseInt(opts.count) || 10;
+    const posts = await client.searchRecent(query, count) as any[];
     if (!posts.length) {
       console.log(chalk.dim("No results."));
       return;
@@ -180,4 +186,7 @@ program
     console.log(ok ? chalk.green(`✓ Unfollowed @${target.username}`) : chalk.red("✗ Failed"));
   });
 
-program.parseAsync();
+program.parseAsync().catch((err: Error) => {
+  console.error(chalk.red("✗"), err.message);
+  process.exit(1);
+});

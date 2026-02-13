@@ -1,5 +1,5 @@
 import { resolve } from "path";
-import { existsSync, readFileSync } from "fs";
+import { existsSync, readFileSync, statSync } from "fs";
 
 export interface XCredentials {
   apiKey: string;
@@ -17,9 +17,19 @@ export function loadCredentials(): XCredentials {
   const configPath = resolve(process.env.HOME ?? "~", ".config/twx-cli/.env");
 
   if (existsSync(configPath)) {
+    // Warn if config file is world-readable
+    try {
+      const mode = statSync(configPath).mode;
+      if (mode & 0o004) {
+        console.warn(`⚠ ${configPath} is world-readable. Run: chmod 600 ${configPath}`);
+      }
+    } catch { /* ignore stat errors */ }
+
     const content = readFileSync(configPath, "utf-8");
     for (const line of content.split("\n")) {
-      const match = line.match(/^\s*([A-Z_]+)\s*=\s*(.+?)\s*$/);
+      // Skip comments and empty lines
+      if (/^\s*(#|$)/.test(line)) continue;
+      const match = line.match(/^\s*([A-Z_][A-Z0-9_]*)\s*=\s*(.+?)(?:\s+#.*)?$/);
       if (match && !process.env[match[1]]) {
         process.env[match[1]] = match[2];
       }

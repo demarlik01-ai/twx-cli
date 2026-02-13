@@ -21,6 +21,27 @@ export class XClient {
     this.bearerToken = credentials.bearerToken;
   }
 
+  /** Safely parse JSON response, handling non-JSON bodies */
+  private async parseResponse(res: Response): Promise<unknown> {
+    const text = await res.text();
+    let data: unknown;
+    try {
+      data = JSON.parse(text);
+    } catch {
+      if (!res.ok) {
+        throw new Error(`X API error ${res.status}: ${text.slice(0, 200)}`);
+      }
+      return {};
+    }
+
+    if (!res.ok) {
+      const detail = (data as any)?.detail ?? (data as any)?.title ?? JSON.stringify(data);
+      throw new Error(`X API error ${res.status}: ${detail}`);
+    }
+
+    return data;
+  }
+
   /** Make an OAuth 1.0a signed request */
   private async request(method: string, url: string, body?: unknown): Promise<unknown> {
     const requestData = { url, method };
@@ -37,38 +58,7 @@ export class XClient {
       body: body ? JSON.stringify(body) : undefined,
     });
 
-    const data = await res.json();
-
-    if (!res.ok) {
-      const detail = (data as any)?.detail ?? (data as any)?.title ?? JSON.stringify(data);
-      throw new Error(`X API error ${res.status}: ${detail}`);
-    }
-
-    return data;
-  }
-
-  /** Make a Bearer token request (app-only auth) */
-  private async bearerRequest(method: string, url: string): Promise<unknown> {
-    if (!this.bearerToken) {
-      throw new Error("Bearer token required for this endpoint. Set X_BEARER_TOKEN.");
-    }
-
-    const res = await fetch(url, {
-      method,
-      headers: {
-        Authorization: `Bearer ${this.bearerToken}`,
-        "Content-Type": "application/json",
-      },
-    });
-
-    const data = await res.json();
-
-    if (!res.ok) {
-      const detail = (data as any)?.detail ?? (data as any)?.title ?? JSON.stringify(data);
-      throw new Error(`X API error ${res.status}: ${detail}`);
-    }
-
-    return data;
+    return this.parseResponse(res);
   }
 
   // ─── Posts ───
@@ -111,23 +101,25 @@ export class XClient {
 
   // ─── Timeline ───
 
-  /** Get user's recent posts */
+  /** Get user's recent posts (max_results: 5-100) */
   async getUserPosts(userId: string, maxResults = 10): Promise<unknown[]> {
+    const clamped = Math.max(5, Math.min(100, maxResults));
     const res = await this.request(
       "GET",
-      `${BASE_URL}/users/${userId}/tweets?max_results=${maxResults}&tweet.fields=created_at,public_metrics,text`
+      `${BASE_URL}/users/${userId}/tweets?max_results=${clamped}&tweet.fields=created_at,public_metrics,text`
     );
     return (res as any).data ?? [];
   }
 
   // ─── Search ───
 
-  /** Search recent posts */
+  /** Search recent posts (max_results: 10-100) */
   async searchRecent(query: string, maxResults = 10): Promise<unknown[]> {
+    const clamped = Math.max(10, Math.min(100, maxResults));
     const encoded = encodeURIComponent(query);
-    const res = await this.bearerRequest(
+    const res = await this.request(
       "GET",
-      `${BASE_URL}/tweets/search/recent?query=${encoded}&max_results=${maxResults}&tweet.fields=created_at,public_metrics,author_id,text`
+      `${BASE_URL}/tweets/search/recent?query=${encoded}&max_results=${clamped}&tweet.fields=created_at,public_metrics,author_id,text`
     );
     return (res as any).data ?? [];
   }
