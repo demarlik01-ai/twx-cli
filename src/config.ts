@@ -10,26 +10,19 @@ export interface XCredentials {
 }
 
 /**
- * Load credentials from environment variables or .env file.
- * Searches: process.env → ./.env → ~/.config/twx-cli/.env
+ * Load credentials from environment variables or config file.
+ * Searches: process.env → ~/.config/twx-cli/.env
  */
 export function loadCredentials(): XCredentials {
-  // Try loading .env files
-  const envPaths = [
-    resolve(process.cwd(), ".env"),
-    resolve(process.env.HOME ?? "~", ".config/twx-cli/.env"),
-  ];
+  const configPath = resolve(process.env.HOME ?? "~", ".config/twx-cli/.env");
 
-  for (const envPath of envPaths) {
-    if (existsSync(envPath)) {
-      const content = readFileSync(envPath, "utf-8");
-      for (const line of content.split("\n")) {
-        const match = line.match(/^\s*([A-Z_]+)\s*=\s*(.+?)\s*$/);
-        if (match && !process.env[match[1]]) {
-          process.env[match[1]] = match[2];
-        }
+  if (existsSync(configPath)) {
+    const content = readFileSync(configPath, "utf-8");
+    for (const line of content.split("\n")) {
+      const match = line.match(/^\s*([A-Z_]+)\s*=\s*(.+?)\s*$/);
+      if (match && !process.env[match[1]]) {
+        process.env[match[1]] = match[2];
       }
-      break;
     }
   }
 
