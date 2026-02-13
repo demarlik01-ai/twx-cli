@@ -12,7 +12,8 @@ twx-cli/
 │   ├── cli.ts              # Entry point, command definitions (commander)
 │   ├── config.ts            # Credential loading & validation
 │   └── client/
-│       ├── index.ts         # XClient base — OAuth, fetch, rate limiting, types
+│       ├── index.ts         # XClient base — OAuth, fetch, rate limiting
+│       ├── types.ts         # Shared type definitions (XPost, XUser, etc.)
 │       ├── posts.ts         # Post CRUD, timeline, search
 │       ├── users.ts         # User lookup, follow/unfollow
 │       └── engagement.ts    # Like, unlike, retweet
@@ -81,6 +82,18 @@ Each command handler:
 2. Calls the appropriate module function (e.g. `posts.createPost(client, ...)`)
 3. Formats and prints output with chalk (or JSON with `--json`)
 
+### `client/types.ts` — Shared Type Definitions
+
+All shared TypeScript interfaces and types live here:
+- `RequestMethod` — HTTP method union type
+- `XPost`, `XUser` — Core domain models
+- `XPublicMetrics`, `XUserMetrics` — Metrics types
+- `XApiResponse<T>`, `XApiMeta` — API response wrappers
+- `XPaginatedResult<T>` — Paginated result type
+- `XClientOptions` — Client configuration
+
+Re-exported through `index.ts` for convenience. Domain modules import types directly from `types.ts`.
+
 ### `client/index.ts` — Base Client
 
 `XClient` wraps Node.js native `fetch` with OAuth 1.0a signing.
@@ -89,7 +102,7 @@ Each command handler:
 - OAuth 1.0a request signing (HMAC-SHA1)
 - Rate limit detection and auto-retry (up to 2 retries)
 - JSON response parsing with error handling
-- Shared type definitions (`XPost`, `XUser`, `XApiResponse`, etc.)
+- Re-exports all types from `types.ts`
 
 The `request()` method is public so domain modules can use it directly.
 

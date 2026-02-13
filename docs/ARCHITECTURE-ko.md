@@ -12,7 +12,8 @@ twx-cli/
 │   ├── cli.ts              # 진입점, 커맨드 정의 (commander)
 │   ├── config.ts            # 크레덴셜 로딩 & 검증
 │   └── client/
-│       ├── index.ts         # XClient 기반 — OAuth, fetch, rate limiting, 타입
+│       ├── index.ts         # XClient 기반 — OAuth, fetch, rate limiting
+│       ├── types.ts         # 공유 타입 정의 (XPost, XUser 등)
 │       ├── posts.ts         # 포스트 CRUD, 타임라인, 검색
 │       ├── users.ts         # 유저 조회, 팔로우/언팔로우
 │       └── engagement.ts    # 좋아요, 리트윗
@@ -81,6 +82,18 @@ commander로 CLI 구조 정의.
 2. 도메인 모듈 함수 호출 (예: `posts.createPost(client, ...)`)
 3. chalk 또는 JSON(`--json`)으로 출력
 
+### `client/types.ts` — 공유 타입 정의
+
+모든 공유 TypeScript 인터페이스와 타입이 여기에 정의:
+- `RequestMethod` — HTTP 메서드 유니온 타입
+- `XPost`, `XUser` — 핵심 도메인 모델
+- `XPublicMetrics`, `XUserMetrics` — 메트릭 타입
+- `XApiResponse<T>`, `XApiMeta` — API 응답 래퍼
+- `XPaginatedResult<T>` — 페이지네이션 결과 타입
+- `XClientOptions` — 클라이언트 설정
+
+`index.ts`를 통해 재내보내기됨. 도메인 모듈은 `types.ts`에서 직접 임포트.
+
 ### `client/index.ts` — 기반 클라이언트
 
 Node.js 내장 `fetch` + OAuth 1.0a 서명.
@@ -89,7 +102,7 @@ Node.js 내장 `fetch` + OAuth 1.0a 서명.
 - OAuth 1.0a 요청 서명 (HMAC-SHA1)
 - Rate limit 감지 및 자동 재시도 (최대 2회)
 - JSON 응답 파싱 + 에러 처리
-- 공유 타입 정의 (`XPost`, `XUser`, `XApiResponse` 등)
+- `types.ts`의 모든 타입 재내보내기
 
 ### `client/posts.ts` — 포스트 관련
 

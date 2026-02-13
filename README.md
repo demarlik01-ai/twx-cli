@@ -144,6 +144,7 @@ src/
 ├── config.ts           # Credential loading & validation
 └── client/
     ├── index.ts        # XClient base (OAuth, fetch, rate limiting)
+    ├── types.ts        # Shared type definitions (XPost, XUser, etc.)
     ├── posts.ts        # Post CRUD, timeline, search
     ├── users.ts        # User lookup, follow/unfollow
     └── engagement.ts   # Like, unlike, retweet
