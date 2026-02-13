@@ -1,5 +1,5 @@
-import type { XClient, XApiResponse, XUser } from "./index.js";
-import { BASE_URL } from "./index.js";
+import type { XApiResponse, XUser } from "./types.js";
+import { type XClient, BASE_URL } from "./index.js";
 
 /** Get authenticated user's info */
 export async function me(client: XClient): Promise<XUser> {

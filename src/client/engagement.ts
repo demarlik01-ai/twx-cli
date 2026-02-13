@@ -1,5 +1,5 @@
-import type { XClient, XApiResponse } from "./index.js";
-import { BASE_URL } from "./index.js";
+import type { XApiResponse } from "./types.js";
+import { type XClient, BASE_URL } from "./index.js";
 
 /** Like a post */
 export async function like(client: XClient, userId: string, tweetId: string): Promise<boolean> {

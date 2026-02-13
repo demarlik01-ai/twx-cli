@@ -24,6 +24,10 @@
     "./engagement": {
       "import": "./dist/client/engagement.js",
       "types": "./dist/client/engagement.d.ts"
+    },
+    "./types": {
+      "import": "./dist/client/types.js",
+      "types": "./dist/client/types.d.ts"
     }
   },
   "files": [
@@ -33,7 +37,7 @@
   ],
   "scripts": {
     "dev": "tsx src/cli.ts",
-    "build": "tsup src/cli.ts src/client/index.ts src/client/posts.ts src/client/users.ts src/client/engagement.ts src/config.ts --format esm --dts --clean",
+    "build": "tsup src/cli.ts src/client/index.ts src/client/types.ts src/client/posts.ts src/client/users.ts src/client/engagement.ts src/config.ts --format esm --dts --clean",
     "lint": "tsc --noEmit",
     "prepublishOnly": "npm run build"
   },
